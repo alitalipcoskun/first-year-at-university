@@ -1,54 +1,62 @@
-#include<stdio.h>
+#include <stdio.h>
+#include <math.h>
+#define NROWS 6
+#define NCOLS 8
 
-int main(){
+int main(void)
+{
+   /*  Declare and initialize variables.  */
+   int row, col;
+   double t[NROWS][NCOLS], top, right, left, bottom, tolerance, update, check, max_update=0.0;
 
-	float top = 0, bottom = 0, left = 0, right = 0, flag = 0;
-	scanf("%f %f %f %f", &top, &right, &bottom, &left);
-	scanf("%f", &flag);
-	float degree[6][8];
-	for(int i = 0; i < 8; i++){
-		degree[0][i] = top;/*top*/
-		degree[5][i] = bottom;/*bottom*/	
-	}
-	for(int i = 1; i < 5; i++){
-		degree[i][0] = left;
-		degree[i][7] = right; 	
-	}
-	for(int i = 1; i < 5; i++){
-		for(int j = 1; j < 7; j++){
-		degree[i][j] = 0;		
-		}	
-	}
-	printf("\n");
-	float update = 0.0, temp = 0.0;
-	
-	int flag_2 = 1;
-	float max;
-	while(flag_2){
-	max = 0;	
-	for(int i = 1; i < 5; i++){
-		for(int j = 1; j < 7; j++){
-			temp = degree[i][j];
-			degree[i][j] = (float)(degree[i-1][j]+degree[i][j-1]+degree[i+1][j]+degree[i][j+1])/(float)4;	
-			update = degree[i][j] - temp;
-		}
-		if(update >= max){
-			max = update;		
-		}
+   /*  Prompt user to enter initial temperatures and tolerance.  */
+   //printf("Enter initial temperatures (top, right, bottom, left): ");
+   scanf("%lf %lf %lf %lf",&top,&right,&bottom,&left);
+   //printf("Enter tolerance for equilibrium (>0): ");
+   scanf("%lf",&tolerance);
 
-		}
-		if(max < flag){
-			flag_2 = 0;	
-		}
-	}
-	printf("Equilibrium values:\n");
-	for(int i = 1; i < 5; i++){
-		for(int j = 1; j < 7; j++){
-			printf("  %.3f", degree[i][j]);		
-		}
-		printf("\n");	
-	}
-	 
+   /*  Initialize grid.  */
+   for (row=1; row<NROWS-1; row++)
+   {
+      for (col=1; col<NCOLS-1; col++)
+         t[row][col] = 0.0;
+      t[row][0] = left;
+      t[row][NCOLS-1] = right;
+   }
+   for (col=0; col<NCOLS; col++)
+   {
+      t[0][col] = top;
+      t[NROWS-1][col] = bottom;
+   }
 
-	return 0;
+   /*  Update the grid across the rows.  */
+   do
+   {
+      /*  Initialize the maximum update this iteration to zero */
+      max_update = 0.0;
+
+      /*  Interior rows */
+      for (row=1; row<NROWS-1; row++)
+      {
+         for(col=1; col<NCOLS-1; col++)
+         {
+            update = (t[row][col+1] + t[row][col-1] + t[row-1][col] + t[row+1][col])/4;
+            check = update - t[row][col];
+            if (check > max_update)
+               max_update = check;
+            t[row][col] = update;
+         }
+      }
+   } while(max_update > tolerance);
+
+   printf("Equilibrium values: \n");
+   for (row=1; row<NROWS-1; row++)
+   {
+      for (col=1; col<NCOLS-1; col++)
+         printf(" %.3f ",t[row][col]);
+      printf("\n");
+   }
+
+   /*  Exit program.  */
+   return 0;
 }
